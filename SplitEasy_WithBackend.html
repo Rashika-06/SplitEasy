@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SplitEasy — Bill Splitter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080a;
+  --surface:#0f1114;
+  --surface2:#161920;
+  --border:#1e2229;
+  --border2:#252b35;
+  --accent:#3ecf8e;
+  --accent2:#2bb5d8;
+  --accent3:#f5a623;
+  --danger:#e05555;
+  --text:#eef0f4;
+  --muted:#5a6170;
+  --muted2:#8a93a0;
+  --font:'Outfit',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(62,207,142,0.07),transparent);}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.page{display:none;animation:fadeIn .35s ease both}.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+#loginPage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem}
+.login-box{width:100%;max-width:400px}
+.login-logo{text-align:center;margin-bottom:2.5rem}
+.login-logo .icon{font-size:3rem;display:block;margin-bottom:.6rem}
+.login-logo h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.login-logo p{color:var(--muted2);font-size:.88rem;margin-top:.25rem}
+
+.login-card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:2rem;backdrop-filter:blur(10px)}
+.tabs{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:1.8rem;gap:4px}
+.tab-btn{flex:1;padding:.55rem;border:none;background:transparent;color:var(--muted2);font-family:var(--font);font-size:.9rem;font-weight:600;border-radius:8px;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--surface2);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+
+.form-group{margin-bottom:1.2rem}
+.form-group label{display:block;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;font-family:var(--mono)}
+.form-group input{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:10px;padding:.75rem 1rem;font-size:1rem;font-family:var(--font);color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
+.form-group input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(62,207,142,.1)}
+.form-group input::placeholder{color:var(--muted)}
+
+.btn-primary{width:100%;padding:.85rem;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;font-family:var(--font);font-size:1rem;font-weight:700;color:#07080a;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 20px rgba(62,207,142,.2)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(62,207,142,.3)}
+.btn-primary:active{transform:translateY(0)}
+
+.msg{font-size:.82rem;font-family:var(--mono);margin-top:.8rem;text-align:center;min-height:1.2rem}
+.msg.error{color:var(--danger)}.msg.success{color:var(--accent)}
+
+#appPage{min-height:100vh;padding:1.5rem 1rem 4rem}
+.app-wrap{max-width:680px;margin:0 auto}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;padding:.75rem 1.2rem;background:var(--surface);border:1px solid var(--border2);border-radius:14px}
+.topbar-left{display:flex;align-items:center;gap:.7rem}
+.topbar-logo{font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.user-badge{font-size:.78rem;font-family:var(--mono);color:var(--muted2);background:var(--bg);border:1px solid var(--border2);padding:.25rem .7rem;border-radius:20px}
+.logout-btn{font-size:.78rem;font-family:var(--mono);color:var(--muted);background:transparent;border:1px solid var(--border);padding:.3rem .7rem;border-radius:8px;cursor:pointer;transition:all .18s}
+.logout-btn:hover{color:var(--danger);border-color:var(--danger)}
+
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:1.6rem;margin-bottom:1.2rem}
+.card-title{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem}
+.card-title span{font-size:1rem}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:480px){.grid2{grid-template-columns:1fr}}
+
+.field label{display:block;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;font-family:var(--mono)}
+.field input,.field select{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:10px;padding:.65rem .9rem;font-size:.95rem;font-family:var(--font);color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(62,207,142,.1)}
+.field input::placeholder{color:var(--muted)}
+.field select option{background:var(--surface2)}
+
+.tip-row{display:flex;gap:.5rem;flex-wrap:wrap}
+.tip-pill{padding:.45rem .85rem;background:var(--bg);border:1.5px solid var(--border2);border-radius:8px;color:var(--muted2);font-family:var(--mono);font-size:.85rem;font-weight:500;cursor:pointer;transition:all .18s}
+.tip-pill:hover{border-color:var(--accent);color:var(--accent)}
+.tip-pill.active{background:rgba(62,207,142,.12);border-color:var(--accent);color:var(--accent)}
+
+.items-list{margin-bottom:1rem}
+.item-row{display:grid;grid-template-columns:1fr 100px 130px 36px;gap:.6rem;align-items:center;margin-bottom:.6rem;animation:fadeIn .25s ease both}
+@media(max-width:500px){.item-row{grid-template-columns:1fr 80px 1fr 32px;gap:.4rem}}
+.item-row input,.item-row select{background:var(--bg);border:1.5px solid var(--border2);border-radius:8px;padding:.55rem .7rem;font-size:.88rem;font-family:var(--font);color:var(--text);outline:none;width:100%;transition:border-color .2s}
+.item-row input:focus,.item-row select:focus{border-color:var(--accent2)}
+.item-row select option{background:var(--surface2)}
+.del-btn{background:transparent;border:1.5px solid var(--border2);border-radius:8px;width:36px;height:36px;color:var(--muted);cursor:pointer;font-size:1rem;transition:all .18s;display:flex;align-items:center;justify-content:center}
+.del-btn:hover{border-color:var(--danger);color:var(--danger);background:rgba(224,85,85,.08)}
+
+.add-item-btn{width:100%;padding:.6rem;background:transparent;border:1.5px dashed var(--border2);border-radius:10px;color:var(--muted2);font-family:var(--font);font-size:.88rem;cursor:pointer;transition:all .2s}
+.add-item-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+
+.item-header{display:grid;grid-template-columns:1fr 100px 130px 36px;gap:.6rem;margin-bottom:.4rem}
+@media(max-width:500px){.item-header{grid-template-columns:1fr 80px 1fr 32px;gap:.4rem}}
+.item-header span{font-size:.65rem;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+.people-list{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.8rem}
+.person-tag{display:flex;align-items:center;gap:.4rem;background:var(--bg);border:1.5px solid var(--border2);border-radius:8px;padding:.35rem .7rem;font-size:.85rem;font-family:var(--mono)}
+.person-tag .remove-person{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:0;line-height:1;transition:color .18s}
+.person-tag .remove-person:hover{color:var(--danger)}
+.add-person-row{display:flex;gap:.6rem}
+.add-person-row input{flex:1;background:var(--bg);border:1.5px solid var(--border2);border-radius:8px;padding:.55rem .8rem;font-size:.9rem;font-family:var(--font);color:var(--text);outline:none;transition:border-color .2s}
+.add-person-row input:focus{border-color:var(--accent3)}
+.add-person-row button{padding:.55rem 1rem;background:rgba(245,166,35,.12);border:1.5px solid var(--accent3);border-radius:8px;color:var(--accent3);font-family:var(--font);font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .18s}
+.add-person-row button:hover{background:rgba(245,166,35,.2)}
+
+.calc-btn{width:100%;padding:1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:14px;font-family:var(--font);font-size:1.05rem;font-weight:800;color:#07080a;cursor:pointer;letter-spacing:.01em;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 20px rgba(62,207,142,.2);margin-top:.5rem}
+.calc-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(62,207,142,.3)}
+
+.result-section{display:none}
+.result-section.show{display:block;animation:fadeIn .35s ease both}
+
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.2rem}
+@media(max-width:400px){.summary-grid{grid-template-columns:1fr 1fr}}
+.summary-box{background:var(--bg);border:1px solid var(--border2);border-radius:12px;padding:1rem;text-align:center}
+.summary-box .s-label{font-size:.65rem;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem}
+.summary-box .s-val{font-size:1.3rem;font-weight:700;font-family:var(--mono)}
+.summary-box.highlight .s-val{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:1.5rem}
+
+.person-breakdown{margin-top:.8rem}
+.person-card{background:var(--bg);border:1px solid var(--border2);border-radius:12px;padding:1rem;margin-bottom:.7rem;animation:fadeIn .3s ease both}
+.person-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.person-name{font-weight:700;font-size:1rem;display:flex;align-items:center;gap:.5rem}
+.person-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#07080a}
+.person-total{font-family:var(--mono);font-size:1.1rem;font-weight:700;color:var(--accent)}
+.person-items{border-top:1px solid var(--border);padding-top:.6rem}
+.person-item-line{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted2);padding:.2rem 0;font-family:var(--mono)}
+.person-item-line .i-name{color:var(--text)}
+
+.paid-chip{font-size:.7rem;background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.3);color:var(--accent3);border-radius:6px;padding:.15rem .5rem;font-family:var(--mono)}
+
+.share-bar{display:flex;gap:.7rem;margin-top:1rem;flex-wrap:wrap}
+.share-btn{flex:1;min-width:120px;padding:.65rem 1rem;border-radius:10px;font-family:var(--font);font-size:.88rem;font-weight:600;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:.4rem}
+.share-btn.copy{background:rgba(62,207,142,.1);border:1.5px solid var(--accent);color:var(--accent)}
+.share-btn.copy:hover{background:rgba(62,207,142,.2)}
+.share-btn.whatsapp{background:rgba(37,211,102,.1);border:1.5px solid #25d366;color:#25d366}
+.share-btn.whatsapp:hover{background:rgba(37,211,102,.2)}
+.share-btn.reset{background:transparent;border:1.5px solid var(--border2);color:var(--muted2)}
+.share-btn.reset:hover{border-color:var(--muted2);color:var(--text)}
+
+.copy-toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#07080a;font-family:var(--mono);font-size:.85rem;font-weight:600;padding:.6rem 1.4rem;border-radius:20px;opacity:0;transition:all .3s;pointer-events:none;z-index:999}
+.copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.error-msg{color:var(--danger);font-size:.8rem;font-family:var(--mono);margin-top:.5rem;display:none}
+
+.loading{display:inline-block;width:12px;height:12px;border:2px solid rgba(62,207,142,.3);border-radius:50%;border-top-color:var(--accent);animation:spin .8s linear infinite;margin-right:.5rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+
+<!-- ═══ LOGIN PAGE ═══ -->
+<div id="loginPage" class="page active">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="icon">🧾</span>
+      <h1>SplitEasy</h1>
+      <p>Smart bill splitting for groups</p>
+    </div>
+    <div class="login-card">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+        <button class="tab-btn" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="loginForm">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="loginUser" placeholder="Enter username"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPass" placeholder="Enter password"/>
+        </div>
+        <button class="btn-primary" id="loginBtn" onclick="doLogin()">Login →</button>
+        <div class="msg" id="loginMsg"></div>
+      </div>
+
+      <!-- Register Form -->
+      <div id="registerForm" style="display:none">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="regName" placeholder="Your name"/>
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="regUser" placeholder="Choose username"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="regPass" placeholder="Choose password (min 4 chars)"/>
+        </div>
+        <button class="btn-primary" id="registerBtn" onclick="doRegister()">Create Account →</button>
+        <div class="msg" id="registerMsg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP PAGE ═══ -->
+<div id="appPage" class="page">
+  <div class="app-wrap">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-logo">🧾 SplitEasy</span>
+        <span class="user-badge" id="userBadge">👤 user</span>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+
+    <!-- 1. Settings -->
+    <div class="card">
+      <div class="card-title"><span>⚙️</span> Bill Settings</div>
+      <div class="grid2">
+        <div class="field">
+          <label>Currency</label>
+          <select id="currency">
+            <option value="₹">₹ INR — Indian Rupee</option>
+            <option value="$">$ USD — US Dollar</option>
+            <option value="€">€ EUR — Euro</option>
+            <option value="£">£ GBP — British Pound</option>
+            <option value="¥">¥ JPY — Japanese Yen</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tip %</label>
+          <div class="tip-row" style="margin-top:.4rem">
+            <span class="tip-pill active" onclick="selectTip(0,this)">0%</span>
+            <span class="tip-pill" onclick="selectTip(5,this)">5%</span>
+            <span class="tip-pill" onclick="selectTip(10,this)">10%</span>
+            <span class="tip-pill" onclick="selectTip(15,this)">15%</span>
+            <span class="tip-pill" onclick="selectTip(20,this)">20%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. People -->
+    <div class="card">
+      <div class="card-title"><span>👥</span> People in the Group</div>
+      <div class="people-list" id="peopleList"></div>
+      <div class="add-person-row">
+        <input type="text" id="personInput" placeholder="Add person name..." onkeydown="if(event.key==='Enter')addPerson()"/>
+        <button onclick="addPerson()">+ Add</button>
+      </div>
+      <div class="error-msg" id="peopleError">Add at least 2 people to split the bill.</div>
+    </div>
+
+    <!-- 3. Items -->
+    <div class="card">
+      <div class="card-title"><span>🛒</span> Itemized Bill</div>
+      <div class="item-header">
+        <span>Item Name</span>
+        <span>Amount</span>
+        <span>Paid By</span>
+        <span></span>
+      </div>
+      <div class="items-list" id="itemsList"></div>
+      <button class="add-item-btn" onclick="addItem()">＋ Add Item</button>
+      <div class="error-msg" id="itemsError">Add at least 1 item with a valid amount.</div>
+    </div>
+
+    <!-- Calculate -->
+    <button class="calc-btn" onclick="calculate()">Calculate & Split the Bill 🎉</button>
+
+    <!-- Results -->
+    <div class="result-section" id="resultSection">
+      <div class="card">
+        <div class="card-title"><span>📊</span> Summary</div>
+        <div class="summary-grid">
+          <div class="summary-box">
+            <div class="s-label">Bill Total</div>
+            <div class="s-val" id="rBill">—</div>
+          </div>
+          <div class="summary-box">
+            <div class="s-label">Tip</div>
+            <div class="s-val" id="rTip">—</div>
+          </div>
+          <div class="summary-box highlight">
+            <div class="s-label">Grand Total</div>
+            <div class="s-val" id="rTotal">—</div>
+          </div>
+        </div>
+
+        <div class="card-title" style="margin-top:.5rem"><span>💸</span> Per Person Breakdown</div>
+        <div class="person-breakdown" id="personBreakdown"></div>
+
+        <div class="share-bar">
+          <button class="share-btn copy" onclick="copyResult()">📋 Copy Result</button>
+          <button class="share-btn whatsapp" onclick="shareWhatsApp()">💬 Share on WhatsApp</button>
+          <button class="share-btn reset" onclick="resetAll()">↺ New Split</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="copy-toast" id="copyToast">✓ Copied to clipboard!</div>
+
+<script>
+// ═══════════════════ DATA & STATE ═══════════════════
+let currentUser = null;
+let selectedTipVal = 0;
+let people = [];
+let items = [];
+let itemIdCounter = 0;
+
+const AVATAR_COLORS = ['#3ecf8e','#2bb5d8','#f5a623','#e05555','#a855f7','#ec4899','#06b6d4','#84cc16'];
+
+// ═══════════════════ PAGE NAVIGATION ═══════════════════
+function switchTab(tab){
+  document.getElementById('loginForm').style.display = tab==='login'?'block':'none';
+  document.getElementById('registerForm').style.display = tab==='register'?'block':'none';
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(tab==='login'&&i===0)||(tab==='register'&&i===1)));
+  document.getElementById('loginMsg').textContent='';
+  document.getElementById('registerMsg').textContent='';
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════ AUTHENTICATION - SENDS TO BACKEND ═══════════════════
+
+function doRegister(){
+  const name = document.getElementById('regName').value.trim();
+  const user = document.getElementById('regUser').value.trim();
+  const pass = document.getElementById('regPass').value.trim();
+  const msg = document.getElementById('registerMsg');
+  const btn = document.getElementById('registerBtn');
+
+  console.log("📝 Registration attempt:", {name, user, pass});
+
+  if(!name || !user || !pass){
+    msg.textContent = 'Please fill all fields!';
+    msg.className = 'msg error';
+    return;
+  }
+
+  // SEND TO BACKEND SERVLET
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span>Creating...';
+
+  fetch('RegisterServlet', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: `fullname=${encodeURIComponent(name)}&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`
+  })
+  .then(res => res.text())
+  .then(data => {
+    console.log("✅ Backend response:", data);
+    msg.textContent = data;
+    
+    if(data.includes('successful') || data.includes('Success')) {
+      msg.className = 'msg success';
+      setTimeout(() => {
+        switchTab('login');
+        document.getElementById('loginUser').value = user;
+        document.getElementById('loginPass').value = '';
+      }, 1500);
+    } else {
+      msg.className = 'msg error';
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = 'Create Account →';
+  })
+  .catch(err => {
+    console.error('❌ Error:', err);
+    msg.textContent = 'Error: Could not connect to server!';
+    msg.className = 'msg error';
+    btn.disabled = false;
+    btn.innerHTML = 'Create Account →';
+  });
+}
+
+function doLogin(){
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const msg = document.getElementById('loginMsg');
+  const btn = document.getElementById('loginBtn');
+
+  console.log("🔐 Login attempt:", {user, pass});
+
+  if(!user || !pass){
+    msg.textContent = 'Please enter username and password!';
+    msg.className = 'msg error';
+    return;
+  }
+
+  // SEND TO BACKEND SERVLET
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span>Logging in...';
+
+  fetch('split', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: `username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`
+  })
+  .then(res => res.text())
+  .then(data => {
+    console.log("✅ Backend response:", data);
+    msg.textContent = data;
+    
+    if(data.includes('Success') || data.includes('successful')) {
+      msg.className = 'msg success';
+      currentUser = user;
+      document.getElementById('userBadge').textContent = '👤 ' + user;
+      
+      setTimeout(() => {
+        showPage('appPage');
+      }, 800);
+    } else {
+      msg.className = 'msg error';
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = 'Login →';
+  })
+  .catch(err => {
+    console.error('❌ Error:', err);
+    msg.textContent = 'Error: Could not connect to server!';
+    msg.className = 'msg error';
+    btn.disabled = false;
+    btn.innerHTML = 'Login →';
+  });
+}
+
+function doLogout(){
+  currentUser = null;
+  people = [];
+  items = [];
+  itemIdCounter = 0;
+  showPage('loginPage');
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginMsg').textContent = '';
+  selectedTipVal = 0;
+}
+
+// ═══════════════════ TIP SELECTION ═══════════════════
+function selectTip(val, el){
+  selectedTipVal = val;
+  document.querySelectorAll('.tip-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ═══════════════════ PEOPLE MANAGEMENT ═══════════════════
+function addPerson(){
+  const input = document.getElementById('personInput');
+  const name = input.value.trim();
+  
+  if(!name) {
+    alert('Please enter a name!');
+    return;
+  }
+  
+  if(people.find(p=>p.toLowerCase()===name.toLowerCase())){
+    alert('Person already added!');
+    input.value = '';
+    return;
+  }
+  
+  people.push(name);
+  input.value = '';
+  renderPeople();
+  renderItems();
+}
+
+function removePerson(name){
+  people = people.filter(p=>p!==name);
+  renderPeople();
+  renderItems();
+}
+
+function renderPeople(){
+  const list = document.getElementById('peopleList');
+  list.innerHTML = '';
+  people.forEach(name=>{
+    const tag = document.createElement('div');
+    tag.className = 'person-tag';
+    const color = AVATAR_COLORS[people.indexOf(name)%AVATAR_COLORS.length];
+    tag.innerHTML = `<span style="color:${color};font-weight:700">${getInitial(name)}</span> ${name} <button class="remove-person" onclick="removePerson('${name.replace(/'/g,"\\'")}')">✕</button>`;
+    list.appendChild(tag);
+  });
+}
+
+function getInitial(name){
+  return name.charAt(0).toUpperCase();
+}
+
+// ═══════════════════ ITEMS MANAGEMENT ═══════════════════
+function addItem(){
+  const id = 'item_'+(++itemIdCounter);
+  items.push({id, name:'', amount:'', paidBy:people[0]||''});
+  renderItems();
+  setTimeout(()=>{
+    const inputs = document.querySelectorAll('.item-row input[data-field="name"]');
+    if(inputs.length) inputs[inputs.length-1].focus();
+  }, 50);
+}
+
+function removeItem(id){
+  items = items.filter(i=>i.id!==id);
+  renderItems();
+}
+
+function renderItems(){
+  const list = document.getElementById('itemsList');
+  list.innerHTML = '';
+  items.forEach(item=>{
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    const opts = people.map(p=>`<option value="${p}" ${item.paidBy===p?'selected':''}>${p}</option>`).join('');
+    row.innerHTML = `
+      <input type="text" data-field="name" placeholder="e.g. Pizza" value="${item.name}" oninput="updateItem('${item.id}','name',this.value)"/>
+      <input type="number" data-field="amount" placeholder="0.00" value="${item.amount}" min="0" oninput="updateItem('${item.id}','amount',this.value)"/>
+      <select onchange="updateItem('${item.id}','paidBy',this.value)">${people.length?opts:'<option>Add people first</option>'}</select>
+      <button class="del-btn" onclick="removeItem('${item.id}')">✕</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function updateItem(id, field, value){
+  const item = items.find(i=>i.id===id);
+  if(item) item[field] = value;
+}
+
+// ═══════════════════ CALCULATION & DISPLAY ═══════════════════
+function calculate(){
+  document.getElementById('peopleError').style.display = 'none';
+  document.getElementById('itemsError').style.display = 'none';
+
+  if(people.length < 2){
+    document.getElementById('peopleError').style.display = 'block';
+    return;
+  }
+  
+  const validItems = items.filter(i=>i.name.trim()&&parseFloat(i.amount)>0);
+  if(!validItems.length){
+    document.getElementById('itemsError').style.display = 'block';
+    return;
+  }
+
+  const cur = document.getElementById('currency').value;
+  const billTotal = validItems.reduce((s,i)=>s+parseFloat(i.amount), 0);
+  const tipAmt = billTotal * selectedTipVal / 100;
+  const grandTotal = billTotal + tipAmt;
+  const perPerson = grandTotal / people.length;
+
+  const paidMap = {};
+  people.forEach(p=>paidMap[p]=0);
+  validItems.forEach(i=>{ 
+    if(paidMap[i.paidBy]!==undefined) paidMap[i.paidBy] += parseFloat(i.amount); 
+  });
+
+  document.getElementById('rBill').textContent = cur + billTotal.toFixed(2);
+  document.getElementById('rTip').textContent = cur + tipAmt.toFixed(2) + (selectedTipVal?` (${selectedTipVal}%)`:' (0%)');
+  document.getElementById('rTotal').textContent = cur + grandTotal.toFixed(2);
+
+  const breakdown = document.getElementById('personBreakdown');
+  breakdown.innerHTML = '';
+
+  people.forEach((person, idx)=>{
+    const color = AVATAR_COLORS[idx%AVATAR_COLORS.length];
+    const paid = paidMap[person] || 0;
+    const owes = perPerson;
+    const net = paid - owes;
+
+    const theirItems = validItems.filter(i=>i.paidBy===person);
+
+    const card = document.createElement('div');
+    card.className = 'person-card';
+    card.style.animationDelay = (idx*0.07)+'s';
+
+    let itemLines = theirItems.map(i=>`
+      <div class="person-item-line">
+        <span class="i-name">${i.name}</span>
+        <span>${cur}${parseFloat(i.amount).toFixed(2)} <span class="paid-chip">paid</span></span>
+      </div>`).join('');
+
+    let netLine = '';
+    if(Math.abs(net)>0.009){
+      netLine = `<div class="person-item-line" style="margin-top:.4rem;padding-top:.4rem;border-top:1px solid var(--border)">
+        <span style="color:var(--muted2)">Share of bill</span>
+        <span style="color:var(--muted2)">${cur}${owes.toFixed(2)}</span>
+      </div>
+      <div class="person-item-line">
+        <span style="font-weight:600;color:${net>0?'var(--accent)':'var(--danger)'}">${net>0?'Gets back':'Owes'}</span>
+        <span style="font-weight:700;color:${net>0?'var(--accent)':'var(--danger)'}">
+          ${net>0?'+':'-'}${cur}${Math.abs(net).toFixed(2)}
+        </span>
+      </div>`;
+    }
+
+    card.innerHTML = `
+      <div class="person-card-head">
+        <div class="person-name">
+          <div class="person-avatar" style="background:${color}">${getInitial(person)}</div>
+          ${person}
+        </div>
+        <div class="person-total">${cur}${owes.toFixed(2)}</div>
+      </div>
+      ${(itemLines||netLine)?`<div class="person-items">${itemLines}${netLine}</div>`:''}
+    `;
+    breakdown.appendChild(card);
+  });
+
+  const rs = document.getElementById('resultSection');
+  rs.classList.remove('show');
+  void rs.offsetWidth;
+  rs.classList.add('show');
+  rs.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ═══════════════════ SHARING & EXPORT ═══════════════════
+function buildShareText(){
+  const cur = document.getElementById('currency').value;
+  const validItems = items.filter(i=>i.name.trim()&&parseFloat(i.amount)>0);
+  const billTotal = validItems.reduce((s,i)=>s+parseFloat(i.amount), 0);
+  const tipAmt = billTotal * selectedTipVal / 100;
+  const grandTotal = billTotal + tipAmt;
+  const perPerson = grandTotal / people.length;
+
+  let txt = `🧾 SplitEasy Bill Summary\n`;
+  txt += `━━━━━━━━━━━━━━━\n`;
+  validItems.forEach(i=>txt += `• ${i.name}: ${cur}${parseFloat(i.amount).toFixed(2)} (paid by ${i.paidBy})\n`);
+  txt += `━━━━━━━━━━━━━━━\n`;
+  txt += `Bill: ${cur}${billTotal.toFixed(2)}\n`;
+  if(selectedTipVal) txt += `Tip (${selectedTipVal}%): ${cur}${tipAmt.toFixed(2)}\n`;
+  txt += `Total: ${cur}${grandTotal.toFixed(2)}\n`;
+  txt += `Each pays: ${cur}${perPerson.toFixed(2)}\n`;
+  txt += `━━━━━━━━━━━━━━━\n`;
+  txt += `Split between: ${people.join(', ')}`;
+  return txt;
+}
+
+function copyResult(){
+  navigator.clipboard.writeText(buildShareText()).then(()=>{
+    const t = document.getElementById('copyToast');
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2200);
+  });
+}
+
+function shareWhatsApp(){
+  const text = encodeURIComponent(buildShareText());
+  window.open('https://wa.me/?text='+text, '_blank');
+}
+
+function resetAll(){
+  items = [];
+  itemIdCounter = 0;
+  renderItems();
+  document.getElementById('resultSection').classList.remove('show');
+  document.querySelectorAll('.tip-pill').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.tip-pill').classList.add('active');
+  selectedTipVal = 0;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ═══════════════════ INITIALIZATION ═══════════════════
+console.log("✅ SplitEasy App Loaded - Backend Connected!");
+</script>
+
+</body>
+</html>
